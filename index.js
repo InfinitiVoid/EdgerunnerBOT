@@ -32,7 +32,7 @@ async function startWebsocket(){
 				sendRequests(dataS);
 				break;
 			case("notification"):
-				switch(dataS.metadata.type){
+				switch(dataS.payload.subscription.type){
 					case("channel.follow"):
 						//sends notification for new follows
 						sendFollowerEmbed(dataS);
