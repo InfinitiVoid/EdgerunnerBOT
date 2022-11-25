@@ -1,6 +1,9 @@
 //every constant or library needed
 require('dotenv').config();
-const { Client,GatewayIntentBits, ActivityType, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Events }= require('discord.js');
+const { Client,GatewayIntentBits, 
+		ActivityType, EmbedBuilder, 
+		ActionRowBuilder, ButtonBuilder, 
+		ButtonStyle, Events, AllowedMentionsTypes } = require('discord.js');
 const tmi = require('tmi.js');
 const TwitchAPI = require('node-twitch').default;
 const discordChannel = process.env.Void_Stream_DC_Channel;
@@ -13,7 +16,9 @@ const WebSocket = require('ws');
 const fs = require('fs');
 const http = require('http')
 const axios = require('axios');
+const { mod } = require('tmi.js/lib/commands');
 const streamIds = [process.env.Void_Stream_ID, process.env.Vargas_Stream_ID];
+const prefix = process.env.PREFIX;
 
 //websocket
 
@@ -25,14 +30,13 @@ async function startWebsocket(){
 	const ws = new WebSocket(last_session);
 	//when websocket gets message every 10 seconds OR when event mentioned in sendRequest() happens
 	ws.on('message', function message(data) {
-		var dataS = JSON.parse(data)
-		console.log(dataS);
+		var dataS = JSON.parse(data);
 		switch(dataS.metadata.message_type){
 			case("session_welcome"): 
 				sendRequests(dataS);
 				break;
 			case("notification"):
-				switch(dataS.payload.subscription.type){
+				switch(dataS.metadata.type){
 					case("channel.follow"):
 						//sends notification for new follows
 						sendFollowerEmbed(dataS);
@@ -122,7 +126,6 @@ async function sendRequests(dataS){
 				m.condition.to_broadcaster_user_id = streamIds[0];
 				break;
 		}
-		console.log(m.transport.session_id + " " + m.type + " " + i);
 		let data2 = JSON.stringify(m);
 		fs.writeFileSync(name, data2);
 		await sendRequest();
@@ -307,7 +310,111 @@ const botTW = new TwitchAPI({
 
 clientTW.connect();
 
-//when messages are sent in any of these channels
+clientDC.on('messageCreate', (msg) => {
+	var _authorId = msg.author.id;
+	let modRoles = ['1021809002746757141', '1044707810811842692', 
+					'1044378591229653072', '943132175316971520', 
+					'1021500852541870171', '1021501906260082708',
+					 '1021462916916056176'];
+	if(_authorId === process.env.DC_BOT_ID) {
+		return;
+	}
+	let authorRoles = msg.member;
+	let isMod = false;
+	for (let i = 0; i < authorRoles._roles.length; i++) {
+		let role = authorRoles._roles[i];
+		modRoles.forEach(e => {
+			if(e === role){
+				isMod = true;
+			}
+		});
+		if(isMod){
+			break;
+		}
+	}
+	var channel = clientDC.channels.cache.get(msg.channelId);
+	let message = msg.content;
+	var mentions = msg.mentions.users;
+	console.log(msg);
+	
+	if(message.startsWith(prefix)){
+		const command = message.slice(prefix.length).split(" ")[0];
+		switch(isMod){
+			case(true):
+				switch(command){
+					case("help"):
+						//help command with isMod parameter
+						break;
+					case("ban"):
+						//ban command that sends ban info with bot through dms before banning
+						break;
+					case("status"):
+						//change status command that only leaves the status part(first part is activity type)
+						var status = message.slice(prefix.length + command.length + 1);
+						changeStatus(status);
+						break;
+				}
+				break;
+			case(false):
+				switch(command){
+					case("help"):
+						//help command with isMod parameter
+						break;
+				}
+				break;
+		}
+	}
+});
+
+//help command
+
+async function help(channel, isMod){
+	switch(isMod){
+		case(true):
+			const help = new EmbedBuilder()
+				.setColor(0x1ca641)
+				.setTitle('Help dla modów')
+				.setDescription("Poniżej znajdują się komendy i info")
+				// !Help - Wysyła wiadomość zawierającą informacje na temat komend \n !status [Typ] [opis] - zmienia status bota. Należy podać [Typ]: Watching, Playing
+				.addFields({
+					name: "!help", 
+					value: "Wysyła wiadomość zawierającą informacje na temat komend"
+				},
+				{
+					name: "!status [Typ] [opis]",
+					value: "Zmienia status bota. Należy podać [Typ]: Watching, Playing, Listening"
+				},
+				{
+					name: "!ban",
+					value: "Banuje użytkownika, wysyłając mu informacje na temat bana"
+				})
+				.setTimestamp()
+				.setFooter({text: 'Provided by EdgerunnerBOT'});
+	}
+}
+
+//ban command
+
+//status changing command
+
+async function changeStatus(message){
+	var _status = message.slice(message.split(" ")[0].length + 1);
+	if(message.split(" ")[0] in ActivityType){
+		switch(message.split(" ")[0]){
+			case("Playing"):
+				clientDC.user.setActivity(_status, {type: ActivityType.Playing});
+				break;
+			case("Listening"):
+				clientDC.user.setActivity(_status, {type: ActivityType.Listening});
+				break;
+			case("Watching"):
+				clientDC.user.setActivity(_status, {type: ActivityType.Watching});
+				break;
+		}
+	}
+}
+
+//when messages are sent in Twitch channel
 
 clientTW.on('message', (channel, tags, message, self) => {
 	if(self) return;
