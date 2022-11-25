@@ -390,6 +390,7 @@ async function help(channel, isMod){
 				})
 				.setTimestamp()
 				.setFooter({text: 'Provided by EdgerunnerBOT'});
+			channel.send({embeds: [help]});
 	}
 }
 
