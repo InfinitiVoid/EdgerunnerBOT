@@ -1,0 +1,3 @@
+words,that,are,banned,from,using
+
+//each word or sentence banned are split by "," which is not good as you can work around it using multiple spaces

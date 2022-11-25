@@ -12,6 +12,9 @@ const vargasDiscordChannel = process.env.Vargas_Follow_DC_Channel;
 const voidSubChannel = process.env.Void_Subs_DC_Channel;
 const voidRaidChannel = process.env.Void_Raids_DC_Channel;
 const voidBitsChannel = process.env.Void_Bits_DC_Channel;
+const banChannel = process.env.BAN_CHANNEL;
+const kickChannel = process.env.KICK_CHANNEL;
+const warnChannel = process.env.WARN_CHANNEL;
 const WebSocket = require('ws');
 const fs = require('fs');
 const http = require('http')
@@ -310,6 +313,10 @@ const botTW = new TwitchAPI({
 
 clientTW.connect();
 
+//on messageCreate in discord servers
+
+let words = fs.readFileSync('banned.txt').toString();
+
 clientDC.on('messageCreate', (msg) => {
 	var _authorId = msg.author.id;
 	let modRoles = ['1021809002746757141', '1044707810811842692', 
@@ -319,10 +326,10 @@ clientDC.on('messageCreate', (msg) => {
 	if(_authorId === process.env.DC_BOT_ID) {
 		return;
 	}
-	let authorRoles = msg.member;
+	let author = msg.member;
 	let isMod = false;
-	for (let i = 0; i < authorRoles._roles.length; i++) {
-		let role = authorRoles._roles[i];
+	for (let i = 0; i < author._roles.length; i++) {
+		let role = author._roles[i];
 		modRoles.forEach(e => {
 			if(e === role){
 				isMod = true;
@@ -335,8 +342,13 @@ clientDC.on('messageCreate', (msg) => {
 	var channel = clientDC.channels.cache.get(msg.channelId);
 	let message = msg.content;
 	var mentions = msg.mentions.users;
-	console.log(msg);
-	
+	_splWord = words.split(",");
+	_splWord.forEach(e => {
+		if(message.includes(e.toLowerCase()) && !isMod){
+			autoWarn(msg, e);
+			msg.delete(1000);
+		}
+	});
 	if(message.startsWith(prefix)){
 		const command = message.slice(prefix.length).split(" ")[0];
 		switch(isMod){
@@ -344,9 +356,27 @@ clientDC.on('messageCreate', (msg) => {
 				switch(command){
 					case("help"):
 						//help command with isMod parameter
+						help(channel, isMod);
+						break;
+					case("clear"):
+						//clear command for specific channel
+						var amount = parseInt(message.slice(prefix.length + command.length + 1));
+						clear(amount, msg);
+						break;
+					case("warn"):
+						//warn command that sends warn info into specific dc channel
+						var warnMsg = message.slice(prefix.length + command.length + 1);
+						warnUser(msg, warnMsg);
+						break;
+					case("kick"):
+						//kick command that sends kick info with bot through dms before kicking
+						var kickMsg = message.slice(prefix.length + command.length + 1);
+						kickUser(msg, kickMsg);
 						break;
 					case("ban"):
 						//ban command that sends ban info with bot through dms before banning
+						var banMsg = message.slice(prefix.length + command.length + 1);
+						banUser(msg, banMsg);
 						break;
 					case("status"):
 						//change status command that only leaves the status part(first part is activity type)
@@ -359,6 +389,7 @@ clientDC.on('messageCreate', (msg) => {
 				switch(command){
 					case("help"):
 						//help command with isMod parameter
+						help(channel, isMod);
 						break;
 				}
 				break;
@@ -366,15 +397,38 @@ clientDC.on('messageCreate', (msg) => {
 	}
 });
 
-//help command
+//auto warn
 
+async function autoWarn(msg, word){
+	var channel = clientDC.channels.cache.get(warnChannel);
+	const _member = msg.author.id;
+	if(_member){
+		const memberTarget = msg.guild.members.cache.get(_member.id);
+		const warnEmbed = new EmbedBuilder()
+			.setColor(0x1ca641)
+			.setTitle(msg.author.username + ' został upomniony')
+			.setDescription("Użycie niedozwolonego słowa: **" + word +"**");
+		channel.send({embeds: [warnEmbed]});
+	}
+}
+
+//delete messages command
+
+async function clear(amount,msg){
+	msg.delete();
+	msg.channel.bulkDelete(amount)
+	.then(console.log(amount))
+	.catch(console.error);
+}
+
+//help command
 async function help(channel, isMod){
 	switch(isMod){
 		case(true):
 			const help = new EmbedBuilder()
 				.setColor(0x1ca641)
 				.setTitle('Help dla modów')
-				.setDescription("Poniżej znajdują się komendy i info")
+				.setDescription("Poniżej znajdują się komendy i info na ich temat")
 				// !Help - Wysyła wiadomość zawierającą informacje na temat komend \n !status [Typ] [opis] - zmienia status bota. Należy podać [Typ]: Watching, Playing
 				.addFields({
 					name: "!help", 
@@ -385,8 +439,20 @@ async function help(channel, isMod){
 					value: "Zmienia status bota. Należy podać [Typ]: Watching, Playing, Listening"
 				},
 				{
+					name: "!warn",
+					value: "Ostrzega użytkownika że popełnił przewinienie na serwerze(manualny warn)"
+				},
+				{
+					name: "!kick",
+					value: "Wyrzuca użytkownika z serwera, wysyłając mu informacje za jakie przewinienie został wyrzucony"
+				},
+				{
+					name: "!delete [ile]",
+					value: "Usuwa podaną ilość wiadomości w kanale"
+				},
+				{
 					name: "!ban",
-					value: "Banuje użytkownika, wysyłając mu informacje na temat bana"
+					value: "Banuje użytkownika, wysyłając mu informacje za jakie przewinienie został zbanowany"
 				})
 				.setTimestamp()
 				.setFooter({text: 'Provided by EdgerunnerBOT'});
@@ -394,7 +460,61 @@ async function help(channel, isMod){
 	}
 }
 
+//warn command
+
+async function warnUser(msg, warnMsg){
+	var channel = clientDC.channels.cache.get(warnChannel);
+	const _member = msg.mentions.users.first();
+	var _spl = warnMsg.split(" ")[0];
+	const _wMsg = warnMsg.slice(_spl.length + 1);
+	if(_member){
+		const memberTarget = msg.guild.members.cache.get(_member.id);
+		memberTarget.send(_wMsg);
+		const warnEmbed = new EmbedBuilder()
+			.setColor(0x1ca641)
+			.setTitle(msg.author.username + ' został upomniony')
+			.setDescription(_wMsg);
+		channel.send({embeds: [warnEmbed]});
+	}
+}
+
+//kick command
+
+async function kickUser(msg, kickMsg){
+	var channel = clientDC.channels.cache.get(kickChannel);
+	const _member = msg.mentions.users.first();
+	var _spl = kickMsg.split(" ")[0];
+	const _kMsg = kickMsg.slice(_spl.length + 1);
+	if(_member){
+		const memberTarget = msg.guild.members.cache.get(_member.id);
+		memberTarget.send(_kMsg);
+		const kickEmbed = new EmbedBuilder()
+			.setColor(0x1ca641)
+			.setTitle(msg.author.username + ' został wyrzucony')
+			.setDescription(_kMsg);
+		channel.send({embeds: [kickEmbed]});
+		memberTarget.kick();
+	}
+}
+
 //ban command
+
+async function banUser(msg, banMsg){
+	var channel = clientDC.channels.cache.get(banChannel);
+	const _member = msg.mentions.users.first();
+	var _spl = banMsg.split(" ")[0];
+	const _bMsg = banMsg.slice(_spl.length + 1);
+	if(_member){
+		const memberTarget = msg.guild.members.cache.get(_member.id);
+		memberTarget.send(_bMsg);
+		const banEmbed = new EmbedBuilder()
+			.setColor(0x1ca641)
+			.setTitle(msg.author.username + ' został zbanowany')
+			.setDescription(_bMsg);
+		channel.send({embeds: [banEmbed]});
+		memberTarget.ban();
+	}
+}
 
 //status changing command
 
@@ -416,7 +536,6 @@ async function changeStatus(message){
 }
 
 //when messages are sent in Twitch channel
-
 clientTW.on('message', (channel, tags, message, self) => {
 	if(self) return;
 	//if message is command "!discord"
@@ -433,4 +552,3 @@ clientTW.on('message', (channel, tags, message, self) => {
 //Log Discord bot in
 
 clientDC.login(process.env.DC_BOT_TOKEN);
-
