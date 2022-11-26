@@ -3,7 +3,10 @@ require('dotenv').config();
 const { Client,GatewayIntentBits, 
 		ActivityType, EmbedBuilder, 
 		ActionRowBuilder, ButtonBuilder, 
-		ButtonStyle, Events, AllowedMentionsTypes } = require('discord.js');
+		ButtonStyle, SlashCommandBuilder,
+		PermissionFlagBits,
+		Events, AllowedMentionsTypes,
+		ComponentType } = require('discord.js');
 const tmi = require('tmi.js');
 const TwitchAPI = require('node-twitch').default;
 const discordChannel = process.env.Void_Stream_DC_Channel;
@@ -22,6 +25,7 @@ const axios = require('axios');
 const { mod } = require('tmi.js/lib/commands');
 const streamIds = [process.env.Void_Stream_ID, process.env.Vargas_Stream_ID];
 const prefix = process.env.PREFIX;
+const ncp = require('copy-paste');
 
 //websocket
 
@@ -354,6 +358,10 @@ clientDC.on('messageCreate', (msg) => {
 		switch(isMod){
 			case(true):
 				switch(command){
+					case("invite"):
+						//invite command that sends embed with button to join server
+						invite(channel);
+						break;
 					case("help"):
 						//help command with isMod parameter
 						help(channel, isMod);
@@ -385,11 +393,14 @@ clientDC.on('messageCreate', (msg) => {
 						break;
 				}
 				break;
-			case(false):
+			case(false || true):
 				switch(command){
 					case("help"):
 						//help command with isMod parameter
 						help(channel, isMod);
+						break;
+					case("invite"):
+						//invite command
 						break;
 				}
 				break;
@@ -397,8 +408,28 @@ clientDC.on('messageCreate', (msg) => {
 	}
 });
 
-//auto warn
+//invite command
 
+async function invite(channel, msg){
+	const inviteEmbed = new EmbedBuilder()
+		.setColor(0x1ca641)
+		.setTitle('Link do Discorda')
+		.setDescription("Skopiuj link poniżej lub naciśnij przycisk \n\n https://discord.gg/uP5TkSwxxF")
+		.setImage("https://cdn.discordapp.com/attachments/1035616109472264303/1045992061117149264/60ae00b1fa79f18fd7bb6ae493952c91.jpg");
+		const row = new ActionRowBuilder()
+		.addComponents(
+			new ButtonBuilder()
+				.setCustomId('dclink')
+				.setLabel('Skopiuj link')
+				.setStyle(ButtonStyle.Primary),
+		);
+	channel.send({
+		embeds: [inviteEmbed],
+		components: [row]
+	});
+}
+
+//auto warn
 async function autoWarn(msg, word){
 	var channel = clientDC.channels.cache.get(warnChannel);
 	const _member = msg.author.id;
@@ -416,8 +447,7 @@ async function autoWarn(msg, word){
 
 async function clear(amount,msg){
 	msg.delete();
-	msg.channel.bulkDelete(amount)
-	.then(console.log(amount))
+	msg.channel.bulkDelete(amount, true)
 	.catch(console.error);
 }
 
@@ -534,6 +564,19 @@ async function changeStatus(message){
 		}
 	}
 }
+
+//button interaction event
+
+clientDC.on(Events.InteractionCreate, interaction => {
+	if(!interaction.isButton()) return;
+	if(interaction.customId === "dclink"){
+		interaction.reply('Skopiowano link');
+		ncp.copy('https://discord.gg/uP5TkSwxxF');
+		setTimeout(function(){
+			interaction.deleteReply();
+		},4000);
+	}
+});
 
 //when messages are sent in Twitch channel
 clientTW.on('message', (channel, tags, message, self) => {
