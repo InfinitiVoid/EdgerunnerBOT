@@ -6,7 +6,7 @@ const { Client,GatewayIntentBits,
 		ButtonStyle, SlashCommandBuilder,
 		PermissionFlagBits,
 		Events, AllowedMentionsTypes,
-		ComponentType } = require('discord.js');
+		ComponentType, AttachmentBuilder } = require('discord.js');
 const tmi = require('tmi.js');
 const TwitchAPI = require('node-twitch').default;
 const discordChannel = process.env.Void_Stream_DC_Channel;
@@ -18,6 +18,7 @@ const voidBitsChannel = process.env.Void_Bits_DC_Channel;
 const banChannel = process.env.BAN_CHANNEL;
 const kickChannel = process.env.KICK_CHANNEL;
 const warnChannel = process.env.WARN_CHANNEL;
+const welcomeChannel = process.env.WELCOME_CHANNEL;
 const WebSocket = require('ws');
 const fs = require('fs');
 const http = require('http')
@@ -26,6 +27,10 @@ const { mod } = require('tmi.js/lib/commands');
 const streamIds = [process.env.Void_Stream_ID, process.env.Vargas_Stream_ID];
 const prefix = process.env.PREFIX;
 const ncp = require('copy-paste');
+const { createCanvas, loadImage, registerFont } = require('canvas');
+
+registerFont('fonts/Kanit-Regular.ttf', {family: 'Kanit'});
+registerFont('fonts/Cyberjunkies Italic.ttf', {family: 'Cyberjunkies'});
 
 //websocket
 
@@ -358,6 +363,10 @@ clientDC.on('messageCreate', (msg) => {
 		switch(isMod){
 			case(true):
 				switch(command){
+					case("test"):
+						//command that lets me test new commands
+						
+						break;
 					case("invite"):
 						//invite command that sends embed with button to join server
 						invite(channel);
@@ -577,6 +586,67 @@ clientDC.on(Events.InteractionCreate, interaction => {
 		},4000);
 	}
 });
+
+//new person joining the server
+
+clientDC.on('guildMemberAdd', async _user =>{
+	var channel = clientDC.channels.cache.get(welcomeChannel);
+	let avatarUrl = _user.displayAvatarURL();
+	welcomeImage(avatarUrl, channel, _user);
+})
+
+//create welcome image and send it
+
+async function welcomeImage(avatarUrl, channel, _user){
+	const user = await clientDC.users.fetch(_user);
+	
+	let avatar = await loadImage("https://cdn.discordapp.com/attachments/1035616109472264303/1046158269393162280/07c.jpg");
+	
+	let bg= await loadImage("https://cdn.discordapp.com/attachments/1035616109472264303/1046164440044814416/waww.png");
+	
+	const canvas = createCanvas(800,300);
+	const ctx = canvas.getContext('2d');
+	
+	ctx.fill();
+	ctx.drawImage(bg,0,0, 800,300);
+	
+	const circle = {
+		x: canvas.width/4,
+		y: canvas.height/2,
+		radius: 70,
+	}
+	
+	var msg = 'Witaj ' + user.username;
+	
+	ctx.font = 'italic 40px Cyberjunkies'
+	ctx.fillStyle = "#FFFFFF";
+	ctx.textAlign = 'start';
+	ctx.strokeStyle = "#000000";
+	ctx.fillText(msg, circle.x + circle.radius +25 , circle.y - circle.radius/4);
+	ctx.strokeText(msg, circle.x + circle.radius +25 , circle.y - circle.radius/4);
+	
+	ctx.font = `24px Kanit`;
+	ctx.fillStyle = '#FFFFFF';
+	
+	var msgs = '#'+user.discriminator;
+	
+	ctx.fillText(msgs, circle.x + circle.radius +25, circle.y + circle.radius/4);
+	
+	ctx.beginPath();
+	ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2, true);
+	ctx.closePath();
+	ctx.clip();
+	const aspect = avatar.height / avatar.width;
+	const hsx = circle.radius * Math.max(1.0 / aspect, 1.0);
+	const hsy = circle.radius * Math.max(aspect, 1.0);
+	ctx.drawImage(avatar,circle.x - hsx,circle.y - hsy,hsx * 2,hsy * 2);
+	
+	
+	const imagg = new AttachmentBuilder(canvas.toBuffer(), {name: "welcome.png"});
+	setTimeout(function(){
+		channel.send({files: [imagg]});;
+	},1000);
+}
 
 //when messages are sent in Twitch channel
 clientTW.on('message', (channel, tags, message, self) => {
