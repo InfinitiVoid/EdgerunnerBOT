@@ -19,6 +19,9 @@ const banChannel = process.env.BAN_CHANNEL;
 const kickChannel = process.env.KICK_CHANNEL;
 const warnChannel = process.env.WARN_CHANNEL;
 const welcomeChannel = process.env.WELCOME_CHANNEL;
+const ruleChannel = process.env.RULE_CHANNEL;
+const annChannel = process.env.ANN_CHANNEL;
+const gameCHANNEL = process.env.GAME_ROLE_CHANNEL;
 const WebSocket = require('ws');
 const fs = require('fs');
 const http = require('http')
@@ -31,6 +34,16 @@ const { createCanvas, loadImage, registerFont } = require('canvas');
 
 registerFont('fonts/Kanit-Regular.ttf', {family: 'Kanit'});
 registerFont('fonts/Cyberjunkies Italic.ttf', {family: 'Cyberjunkies'});
+
+//roles buttons ids
+
+const ROLES = {
+	VERIFIED: '943133599501283338',
+	STREAMS: '1034793599033954416',
+	VIDEOS: '1034793641966841908',
+	ANNOUCEMENTS: '1034793664955813908',
+	//games later to be added
+}
 
 //websocket
 
@@ -300,6 +313,8 @@ clientDC.on('ready', () =>  {
 	clientDC.user.setStatus('dnd');
 	clientDC.user.setActivity("over morons", {type: ActivityType.Watching});
 	startWebsocket();
+	//when unslashed, sends rules embed with button to accept it
+	//rules();
 });
 
 //create Twitch chat bot and connect to chats
@@ -365,7 +380,7 @@ clientDC.on('messageCreate', (msg) => {
 				switch(command){
 					case("test"):
 						//command that lets me test new commands
-						
+						test(msg, channel);
 						break;
 					case("invite"):
 						//invite command that sends embed with button to join server
@@ -423,14 +438,14 @@ async function invite(channel, msg){
 	const inviteEmbed = new EmbedBuilder()
 		.setColor(0x1ca641)
 		.setTitle('Link do Discorda')
-		.setDescription("Skopiuj link poniżej lub naciśnij przycisk \n\n https://discord.gg/uP5TkSwxxF")
+		.setDescription("Kliknij/skopiuj link ponizej lub nacisnij przycisk \n\n https://discord.gg/uP5TkSwxxF")
 		.setImage("https://cdn.discordapp.com/attachments/1035616109472264303/1045992061117149264/60ae00b1fa79f18fd7bb6ae493952c91.jpg");
 		const row = new ActionRowBuilder()
-		.addComponents(
-			new ButtonBuilder()
-				.setCustomId('dclink')
-				.setLabel('Skopiuj link')
-				.setStyle(ButtonStyle.Primary),
+			.addComponents(
+				new ButtonBuilder()
+					.setLabel('AFTERLIFE')
+					.setURL("https://discord.gg/uP5TkSwxxF")
+					.setStyle(ButtonStyle.Link)
 		);
 	channel.send({
 		embeds: [inviteEmbed],
@@ -446,8 +461,8 @@ async function autoWarn(msg, word){
 		const memberTarget = msg.guild.members.cache.get(_member.id);
 		const warnEmbed = new EmbedBuilder()
 			.setColor(0x1ca641)
-			.setTitle(msg.author.username + ' został upomniony')
-			.setDescription("Użycie niedozwolonego słowa: **" + word +"**");
+			.setTitle(msg.author.username + ' zostal upomniony')
+			.setDescription("Uzycie niedozwolonego slowa: **" + word +"**");
 		channel.send({embeds: [warnEmbed]});
 	}
 }
@@ -467,37 +482,127 @@ async function help(channel, isMod){
 			const help = new EmbedBuilder()
 				.setColor(0x1ca641)
 				.setTitle('Help dla modów')
-				.setDescription("Poniżej znajdują się komendy i info na ich temat")
-				// !Help - Wysyła wiadomość zawierającą informacje na temat komend \n !status [Typ] [opis] - zmienia status bota. Należy podać [Typ]: Watching, Playing
+				.setDescription("Ponizej znajduja sie komendy i info na ich temat")
+				// !Help - Wysyla wiadomosc zawierajaca informacje na temat komend \n !status [Typ] [opis] - zmienia status bota. Nalezy podac [Typ]: Watching, Playing
 				.addFields({
 					name: "!help", 
-					value: "Wysyła wiadomość zawierającą informacje na temat komend"
+					value: "Wysyla wiadomosc zawierajaca informacje na temat komend"
 				},
 				{
 					name: "!status [Typ] [opis]",
-					value: "Zmienia status bota. Należy podać [Typ]: Watching, Playing, Listening"
+					value: "Zmienia status bota. Nalezy podac [Typ]: Watching, Playing, Listening"
 				},
 				{
 					name: "!warn",
-					value: "Ostrzega użytkownika że popełnił przewinienie na serwerze(manualny warn)"
+					value: "Ostrzega uzytkownika ze popelnil przewinienie na serwerze(manualny warn)"
 				},
 				{
 					name: "!kick",
-					value: "Wyrzuca użytkownika z serwera, wysyłając mu informacje za jakie przewinienie został wyrzucony"
+					value: "Wyrzuca uzytkownika z serwera, wysylajac mu informacje za jakie przewinienie zostal wyrzucony"
 				},
 				{
 					name: "!delete [ile]",
-					value: "Usuwa podaną ilość wiadomości w kanale"
+					value: "Usuwa podana ilosc wiadomosci w kanale"
 				},
 				{
 					name: "!ban",
-					value: "Banuje użytkownika, wysyłając mu informacje za jakie przewinienie został zbanowany"
-				})
+					value: "Banuje uzytkownika, wysylajac mu informacje za jakie przewinienie zostal zbanowany"
+				}
+				)
 				.setTimestamp()
 				.setFooter({text: 'Provided by EdgerunnerBOT'});
 			channel.send({embeds: [help]});
 	}
 }
+
+//test command
+
+async function test(){
+	//here add commands that need testing
+}
+
+//rules handler
+
+async function rules(){
+	var channel = clientDC.channels.cache.get(ruleChannel);
+	const button = new ButtonBuilder()
+					.setLabel('Zaakceptuj')
+					.setCustomId('verified')
+					.setStyle(ButtonStyle.Primary);
+	const row = new ActionRowBuilder()
+			.addComponents(button);
+	
+	const ruleEmbed = new EmbedBuilder()
+		.setColor(0xFFFFFF)
+		.setTitle('Regulamin servera')
+		.setAuthor({ name: 'Edgerunner', iconURL: 'https://cdn.discordapp.com/attachments/1035616109472264303/1040208045852086302/60ae00b1fa79f18fd7bb6ae493952c91.jpg'})
+		.setDescription('Regulamin do napisania')
+		.setImage('https://cdn.discordapp.com/attachments/1035616109472264303/1046482726410272908/red.gif')
+		.setTimestamp()
+		.setFooter({ text: 'Provided by Edgerunner' });
+	
+	channel.send({
+		embeds: [ruleEmbed],
+		components: [row]
+	});
+}
+
+//game role handler
+
+
+
+//announcement role handler
+
+
+
+//when interacted with button
+
+clientDC.on(Events.InteractionCreate, async (interaction) =>{
+	if (interaction.isButton()) {
+    const role = interaction.guild.roles.cache.get(
+      ROLES[interaction.customId.toUpperCase()] // the button's custom Id MUST match your ROLES property defined above
+    );
+
+    if (!role)
+      return interaction.reply({ content: 'Role not found', ephemeral: true });
+
+    const hasRole = interaction.member.roles.cache.has(role.id);
+    console.log(hasRole);
+
+    if (hasRole)
+      return interaction.member.roles
+        .remove(role)
+        .then((member) =>
+          interaction.reply({
+            content: `The ${role} role was removed to you ${member}`,
+            ephemeral: true,
+          })
+        )
+        .catch((err) => {
+          console.log(err);
+          return interaction.reply({
+            content: `Something went wrong. The ${role} role was not removed to you ${member}`,
+            ephemeral: true,
+          });
+        });
+    else
+      return interaction.member.roles
+        .add(role)
+        .then((member) =>
+          interaction.reply({
+            content: `The ${role} role was added to you ${member}`,
+            ephemeral: true,
+          })
+        )
+        .catch((err) => {
+          console.log(err);
+          return interaction.reply({
+            content: `Something went wrong. The ${role} role was not added to you ${member}`,
+            ephemeral: true,
+          });
+        });
+  }
+});
 
 //warn command
 
@@ -511,7 +616,7 @@ async function warnUser(msg, warnMsg){
 		memberTarget.send(_wMsg);
 		const warnEmbed = new EmbedBuilder()
 			.setColor(0x1ca641)
-			.setTitle(msg.author.username + ' został upomniony')
+			.setTitle(msg.author.username + ' zostal upomniony')
 			.setDescription(_wMsg);
 		channel.send({embeds: [warnEmbed]});
 	}
@@ -524,34 +629,43 @@ async function kickUser(msg, kickMsg){
 	const _member = msg.mentions.users.first();
 	var _spl = kickMsg.split(" ")[0];
 	const _kMsg = kickMsg.slice(_spl.length + 1);
+	if(_kMsg.length = 0){
+		_kMsg = "Przyczyna niepodana"
+	}
 	if(_member){
 		const memberTarget = msg.guild.members.cache.get(_member.id);
 		memberTarget.send(_kMsg);
 		const kickEmbed = new EmbedBuilder()
 			.setColor(0x1ca641)
-			.setTitle(msg.author.username + ' został wyrzucony')
+			.setTitle(msg.author.username + ' zostal wyrzucony')
 			.setDescription(_kMsg);
 		channel.send({embeds: [kickEmbed]});
-		memberTarget.kick();
+		setTimeout(function(){
+			memberTarget.kick();
+		},1000);
 	}
 }
 
 //ban command
-
 async function banUser(msg, banMsg){
 	var channel = clientDC.channels.cache.get(banChannel);
 	const _member = msg.mentions.users.first();
 	var _spl = banMsg.split(" ")[0];
 	const _bMsg = banMsg.slice(_spl.length + 1);
+	if(_bMsg.length = 0){
+		_bMsg = "Przyczyna niepodana"
+	}
 	if(_member){
 		const memberTarget = msg.guild.members.cache.get(_member.id);
 		memberTarget.send(_bMsg);
 		const banEmbed = new EmbedBuilder()
 			.setColor(0x1ca641)
-			.setTitle(msg.author.username + ' został zbanowany')
+			.setTitle(msg.author.username + ' zostal zbanowany')
 			.setDescription(_bMsg);
 		channel.send({embeds: [banEmbed]});
-		memberTarget.ban();
+		setTimeout(function(){
+			memberTarget.ban();
+		},1000);
 	}
 }
 
@@ -574,24 +688,11 @@ async function changeStatus(message){
 	}
 }
 
-//button interaction event
-
-clientDC.on(Events.InteractionCreate, interaction => {
-	if(!interaction.isButton()) return;
-	if(interaction.customId === "dclink"){
-		interaction.reply('Skopiowano link');
-		ncp.copy('https://discord.gg/uP5TkSwxxF');
-		setTimeout(function(){
-			interaction.deleteReply();
-		},4000);
-	}
-});
-
 //new person joining the server
 
 clientDC.on('guildMemberAdd', async _user =>{
 	var channel = clientDC.channels.cache.get(welcomeChannel);
-	let avatarUrl = _user.displayAvatarURL();
+	let avatarUrl = _user.displayAvatarURL().slice(0,-4) + 'png';
 	welcomeImage(avatarUrl, channel, _user);
 })
 
@@ -599,10 +700,9 @@ clientDC.on('guildMemberAdd', async _user =>{
 
 async function welcomeImage(avatarUrl, channel, _user){
 	const user = await clientDC.users.fetch(_user);
+	let avatar = await loadImage(avatarUrl);
 	
-	let avatar = await loadImage("https://cdn.discordapp.com/attachments/1035616109472264303/1046158269393162280/07c.jpg");
-	
-	let bg= await loadImage("https://cdn.discordapp.com/attachments/1035616109472264303/1046164440044814416/waww.png");
+	let bg= await loadImage("https://cdn.discordapp.com/attachments/1035616109472264303/1046376584430497843/welcomeBg.png");
 	
 	const canvas = createCanvas(800,300);
 	const ctx = canvas.getContext('2d');
