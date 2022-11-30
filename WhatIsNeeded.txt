@@ -1,0 +1,45 @@
+Functions:
+	Twitch websocket - check
+	Twitch subscription requests - check
+	Twitch chat commands
+	Twitch timed messages
+	Twitch stream notification - check
+	Twitch online status - check
+	Twitch follow notification - check
+	Twitch subs notification - check
+	Twitch cheer notification - check
+	Twitch raid notification - check
+	Twitch offline status - check
+	Twitch auto mod
+	Discord auto mod
+	Discord commands
+	Discord interaction handler
+	Discord welcome image
+	Discord leveling system
+	Discord poll system
+	Discord gambling system
+	Discord private voice channels
+	Discord funny commands
+	OBS integration for the funny
+	Youtube videos
+	Twitter automatic tweets
+
+Total subfiles to make:
+	24 files for functions
+		+ at least 7 for Discord commands handler
+		+ 9 for Twitch events handler
+
+.env variables needed:
+	13 for Discord channels
+	7 for Discord and Twitch bot tokens/secrets/authorization
+	2 for Twitch channel ids
+	1 for Discord bot prefix
+	1 for Twitch bot prefix
+	
+.txt files for all systems:
+	-at least 4 for self-role handling
+	-at least 1 for leveling and gambling system
+	-1 for automod for Twitch and Discord
+	
+.json files
+	-at least 1 for handling the Twitch requests

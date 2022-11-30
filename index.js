@@ -3,10 +3,7 @@ require('dotenv').config();
 const { Client,GatewayIntentBits, 
 		ActivityType, EmbedBuilder, 
 		ActionRowBuilder, ButtonBuilder, 
-		ButtonStyle, SlashCommandBuilder,
-		PermissionFlagBits,
-		Events, AllowedMentionsTypes,
-		ComponentType, AttachmentBuilder } = require('discord.js');
+		ButtonStyle, Events, AttachmentBuilder } = require('discord.js');
 const tmi = require('tmi.js');
 const TwitchAPI = require('node-twitch').default;
 const discordChannel = process.env.Void_Stream_DC_Channel;
@@ -29,7 +26,6 @@ const axios = require('axios');
 const { mod } = require('tmi.js/lib/commands');
 const streamIds = [process.env.Void_Stream_ID, process.env.Vargas_Stream_ID];
 const prefix = process.env.PREFIX;
-const ncp = require('copy-paste');
 const { createCanvas, loadImage, registerFont } = require('canvas');
 
 registerFont('fonts/Kanit-Regular.ttf', {family: 'Kanit'});
@@ -47,7 +43,7 @@ const ROLES = {
 
 //websocket
 
-var name = 'streamData.json';
+var name = './jsons/streamData.json';
 var last_session = "wss://eventsub-beta.wss.twitch.tv/ws";
 
 async function startWebsocket(){
