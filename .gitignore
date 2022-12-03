@@ -104,4 +104,6 @@ dist
 .tern-port
 
 #package-lock file
-package-lock.json
+.package-lock.json
+
+./txts/bannedWords.txt

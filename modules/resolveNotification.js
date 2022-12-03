@@ -6,7 +6,7 @@ const sendBitsEmbed = require('./Notifications/cheer');
 const sendRaidEmbed = require('./Notifications/raid');
 
 module.exports = (data, clientTW, clientDC, botTW) => {
-    switch(data.metadata.type){
+    switch(data.metadata.subscription_type){
         case("channel.follow"):
             sendFollowerEmbed(data, clientDC);
             break;

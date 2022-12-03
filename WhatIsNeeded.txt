@@ -12,9 +12,9 @@ Functions:
 	Twitch offline status - check
 	Twitch auto mod
 	Discord auto mod
-	Discord commands
+	Discord commands - check
 	Discord interaction handler
-	Discord welcome image
+	Discord welcome image - check
 	Discord leveling system
 	Discord poll system
 	Discord gambling system
@@ -38,6 +38,7 @@ Total subfiles to make:
 	
 .txt files for all systems:
 	-at least 4 for self-role handling
+	-at least 2 for mod roles/users
 	-at least 1 for leveling and gambling system
 	-1 for automod for Twitch and Discord
 	

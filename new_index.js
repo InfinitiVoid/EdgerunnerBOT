@@ -1,9 +1,12 @@
 require('dotenv').config();
 
-const { Client, GatewayIntentBits, ActivityType } = require('discord.js');
+const { Client, GatewayIntentBits, ActivityType, Events } = require('discord.js');
 const twitchWebsocket = require('./modules/twitchWebsocket');
 const discordMessage = require('./modules/resolveDcMessages');
 const discordJoin = require('./modules/createWelcomeImage');
+const resolveTwitchMessages = require('./modules/twitchCommandHandler');
+const resolveDiscordMessages = require('./modules/resolveDcMessages');
+const resolveDiscordInteractions = require('./modules/discordInteractionHandler');
 const tmi = require('tmi.js');
 const TwitchAPI = require('node-twitch').default;
 
@@ -34,14 +37,22 @@ const botTW = new TwitchAPI({
 });
 
 clientDC.on('messageCreate', (msg) => {
-
+	resolveDiscordMessages(clientDC, msg);
 })
 
 clientDC.on('guildMemberAdd', async _user =>{
 	welcomeImage(clientDC, _user);
 })
 
+clientDC.on(Events.InteractionCreate, async(interaction) =>{
+	resolveDiscordInteractions(interaction);
+})
+
 clientTW.connect();
+
+clientTW.on('message', (channel, tags, message, self) => {
+	resolveTwitchMessages(clientTW, channel, tags, message, self);
+})
 
 clientDC.on('ready', () => {
     clientDC.user.setStatus('dnd');
