@@ -1,8 +1,8 @@
 Functions:
 	Twitch websocket - check
 	Twitch subscription requests - check
-	Twitch chat commands
-	Twitch timed messages
+	Twitch chat commands - check
+	Twitch timed messages - check
 	Twitch stream notification - check
 	Twitch online status - check
 	Twitch follow notification - check
@@ -10,10 +10,10 @@ Functions:
 	Twitch cheer notification - check
 	Twitch raid notification - check
 	Twitch offline status - check
-	Twitch auto mod
-	Discord auto mod
+	Twitch auto mod - check
+	Discord auto mod - check
 	Discord commands - check
-	Discord interaction handler
+	Discord interaction handler - check
 	Discord welcome image - check
 	Discord leveling system
 	Discord poll system

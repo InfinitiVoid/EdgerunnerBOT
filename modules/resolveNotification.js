@@ -4,6 +4,7 @@ const streamOnline = require('./Notifications/streamOnline');
 const streamOffline = require('./Notifications/streamOffline');
 const sendBitsEmbed = require('./Notifications/cheer');
 const sendRaidEmbed = require('./Notifications/raid');
+const autoMessages = require('./twichAutoMessages');
 
 module.exports = (data, clientTW, clientDC, botTW) => {
     switch(data.metadata.subscription_type){

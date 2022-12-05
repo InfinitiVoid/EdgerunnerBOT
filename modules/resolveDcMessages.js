@@ -28,5 +28,4 @@ module.exports = (clientDC, msg) => {
     if(msg.content.startsWith(process.env.PREFIX)){
         handleCommands(clientDC.channels.cache.get(msg.channelId), msg.content, isMod, clientDC, msg);
     }
-
 }

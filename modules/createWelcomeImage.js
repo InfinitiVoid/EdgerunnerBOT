@@ -1,4 +1,5 @@
 require('dotenv').config();
+const { AttachmentBuilder } = require('discord.js');
 const { createCanvas, loadImage, registerFont } = require('canvas');
 
 registerFont('./fonts/Kanit-Regular.ttf', {family: 'Kanit'});
