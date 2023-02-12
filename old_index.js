@@ -430,7 +430,7 @@ clientDC.on('messageCreate', (msg) => {
 
 //invite command
 
-async function invite(channel, msg){
+async function invite(channel){
 	const inviteEmbed = new EmbedBuilder()
 		.setColor(0x1ca641)
 		.setTitle('Link do Discorda')

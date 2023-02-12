@@ -7,6 +7,7 @@ const discordJoin = require('./modules/createWelcomeImage');
 const resolveTwitchMessages = require('./modules/twitchCommandHandler');
 const resolveDiscordMessages = require('./modules/resolveDcMessages');
 const resolveDiscordInteractions = require('./modules/discordInteractionHandler');
+const wledStart = require('./modules/wledStart');
 const tmi = require('tmi.js');
 const TwitchAPI = require('node-twitch').default;
 
@@ -55,9 +56,13 @@ clientTW.on('message', (channel, tags, message, self) => {
 })
 
 clientDC.on('ready', () => {
+	var channel = clientDC.channels.cache.get('1062019836181499986');
     clientDC.user.setStatus('dnd');
 	clientDC.user.setActivity("over morons", {type: ActivityType.Watching});
+	channel.send("Bot został uruchomiony");
     twitchWebsocket(clientDC, clientTW, botTW);
 })
+
+//wledStart();
 
 clientDC.login(process.env.DC_BOT_TOKEN);

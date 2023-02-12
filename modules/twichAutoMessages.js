@@ -2,13 +2,14 @@ require('dotenv').config();
 
 const discordMessage = require('./Twitch commands/discord');
 
-module.exports = (clientTW, status) => {
-    if(status === 'true'){
-        var i = setInterval(function(){
-            discordMessage(process.env.TWITCH_CHANNEL, clientTW);
-        }, 1800000);
+module.exports = (clientTW, status, channel) => {
+    console.log("Started interval")
+    function intervalFunc() {
+        discordMessage(channel, clientTW);
     }
-    if (status === 'false'){
+    if (status == "true") {
+        var i = setInterval(intervalFunc, 1200000);
+    } else if( status == "false"){
         clearInterval(i);
     }
 }

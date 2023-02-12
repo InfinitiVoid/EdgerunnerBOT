@@ -53,6 +53,7 @@ module.exports = (dataS) => {
 		}
 		let data2 = JSON.stringify(m);
 		fs.writeFileSync(name, data2);
+		console.log(m);
 		sendRequest();
 	}
 }

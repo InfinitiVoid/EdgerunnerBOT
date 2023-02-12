@@ -5,11 +5,11 @@ const handleRequest = require('./requestHandler');
 const resolveNotification = require('./resolveNotification.js');
 
 module.exports = (clientDC, clientTW, botTW) => {
-    async function startWebsocket(){
-        const ws = new WebSocket(wsServer);
-
+    async function startWebsocket(server){
+        const ws = new WebSocket(server);
         ws.on('message', function message(data) {
             var dataS = JSON.parse(data);
+            console.log(dataS);
             switch(dataS.metadata.message_type){
                 case("session_welcome"): 
                     handleRequest(dataS);
@@ -17,11 +17,11 @@ module.exports = (clientDC, clientTW, botTW) => {
                 case("notification"):
                     resolveNotification(dataS, clientTW, clientDC, botTW);
                     break;
-                case("reconnect"):
-                    ws = new Websocket(dataS.payload.session.reconnect_url);
-                    break;
+                case("session_reconnect"):
+                    startWebsocket(dataS.payload.session.reconnect_url);
+                    return;
             };
         });
     }
-    startWebsocket();
+    startWebsocket(wsServer);
 }

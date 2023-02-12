@@ -17,7 +17,7 @@ module.exports = (clientDC, msg) => {
         });
     });
 
-    const bannedWords = fs.readFileSync('./txts/bannedWords.txt').toString.split(',');
+    const bannedWords = fs.readFileSync('./txts/bannedWords.txt').toString().split(',');
     bannedWords.forEach(e => {
         if(msg.content.includes(e.toLowerCase()) && !isMod){
 			autoWarn(msg, e, clientDC);

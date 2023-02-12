@@ -1,3 +1,5 @@
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+
 module.exports = (clientDC, msg, kickMsg) => {
     var channel = clientDC.channels.cache.get(kickChannel);
 	const _member = msg.mentions.users.first();

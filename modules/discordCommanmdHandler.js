@@ -15,7 +15,7 @@ module.exports = (channel, content, isMod, clientDC, msg) => {
         case(true):
 				switch(command){
 					case("test"):
-						
+						test();
 						break;
 					case("clear"):
 						var amount = parseInt(content.slice(process.env.PREFIX.length + command.length + 1));
@@ -38,16 +38,15 @@ module.exports = (channel, content, isMod, clientDC, msg) => {
 						changeStatus(status, clientDC);
 						break;
 				}
-				break;
-			case(false || true):
-				switch(command){
-					case("help"):
-						
-						break;
-					case("invite"):
-						invite(channel);
-						break;
-				}
-				break;
+		case(false || true):
+			switch(command){
+				case("help"):
+					
+					break;
+				case("invite"):
+					invite(channel);
+					break;
+			}
+			break;
     }
 }

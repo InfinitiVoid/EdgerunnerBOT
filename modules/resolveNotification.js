@@ -5,8 +5,10 @@ const streamOffline = require('./Notifications/streamOffline');
 const sendBitsEmbed = require('./Notifications/cheer');
 const sendRaidEmbed = require('./Notifications/raid');
 const autoMessages = require('./twichAutoMessages');
+const wledNotification = require('./twitchNotificationWled');
 
 module.exports = (data, clientTW, clientDC, botTW) => {
+    wledNotification(data.metadata.subscription_type);
     switch(data.metadata.subscription_type){
         case("channel.follow"):
             sendFollowerEmbed(data, clientDC);
